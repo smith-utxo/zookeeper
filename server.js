@@ -1,8 +1,15 @@
 const express = require('express');
 const { animals } = require('./data/animals');
+const fs = require('fs');
+const path = require('path');
 
 const PORT = process.env.PORT || 3001; 
 const app = express(); 
+
+// Parse incoming string or array data
+app.use(express.urlencoded({extended: true}));
+//parse incoming JSON data
+app.use(express.json());
 
 // This function will take in req.query as an argument and filter through the animals accordingly, returning the new filtered array. Go ahead and call the filterByQuery() in the app.get() callback now. 
 function filterByQuery(query, animalsArray) {
@@ -49,6 +56,33 @@ function findById(id, animalsArray) {
   return result;
 }
 
+function createNewAnimal(body, animalsArray) {
+  const animal = body;
+  animalsArray.push(animal);
+  fs.writeFileSync(
+    path.join(__dirname, './data/animals.json'),
+    // stringify to convert into JSON, other two arguments means we don't want to edit any of our existing data (null) and the number 2 indicates we want to create white space between our values to make it more readable. 
+    JSON.stringify({animals: animalsArray}, null, 2)
+  );
+  return animal;
+}
+
+function validateAnimal(animal) {
+  if (!animal.name || typeof animal.name !== 'string') {
+    return false;
+  }
+  if (!animal.species || typeof animal.species !== 'string') {
+    return false;
+  }
+  if (!animal.diet || typeof animal.diet !== 'string') {
+    return false;
+  }
+  if (!animal.personalityTraits || !Array.isArray(animal.personalityTraits)) {
+    return false;
+  }
+  return true;
+}
+
 //First argument is a string that describes the route the client will have to fetch from. The second is a callback function that will execute every time that route is accessed with a GET request. Note that we are using the send() method from the res parameter(short for response) to send the string Hello! to our client. 
 app.get('/api/animals', (req, res) => {
   let results = animals; 
@@ -66,6 +100,22 @@ app.get('/api/animals/:id', (req, res) => {
     res.json(result);
   } else {
     res.send(404);
+  }
+});
+
+app.post('/api/animals', (req, res) => {
+  // set id based on what the next index of the array will be
+  req.body.id = animals.length.toString();
+
+  if (!validateAnimal(req.body)){
+    //When we don't send data the server can use or understand, we respond with a 400 error. 
+    //Anything in the 400 range means that it's a user error and not a server error
+    res.status(400).send('The animal is not propertly formatted');
+  } else {
+  // add animal to json file and animals array in this function
+  const animal = createNewAnimal(req.body, animals);
+
+  res.json(animal);
   }
 });
 
