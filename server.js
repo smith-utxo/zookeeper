@@ -54,9 +54,9 @@ app.get('/api/animals', (req, res) => {
   res.json(results);
 })
 
-app.listen(3001, () => {
-  console.log(`API server now on port ${PORT}`);
-})
+app.listen(PORT, () => {
+  console.log(`API server now on port ${PORT}!`);
+});
 
 //It works but what if we just need specific animals from the JSON file? This is where you use parameters. 
 //Navigate to http://localhost:3001/api/animals?name=Erica  in your browser and you will get  Erica. 
