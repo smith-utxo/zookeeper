@@ -43,6 +43,11 @@ function filterByQuery(query, animalsArray) {
   // return the filtered results:
   return filteredResults;
 }
+//Takes in the id and array of animals and returns a single animal object
+function findById(id, animalsArray) {
+  const result = animalsArray.filter(animal => animal.id === id)[0];
+  return result;
+}
 
 //First argument is a string that describes the route the client will have to fetch from. The second is a callback function that will execute every time that route is accessed with a GET request. Note that we are using the send() method from the res parameter(short for response) to send the string Hello! to our client. 
 app.get('/api/animals', (req, res) => {
@@ -53,6 +58,16 @@ app.get('/api/animals', (req, res) => {
   //send method is great for short messages, but if we want to sends lots of JSON we change send to json 
   res.json(results);
 })
+
+// the req object gives us access to another property for finding a specific animal rather than an array of the animals that match a query. the method is req.params. Unlike the query object, the param object needs to be defined in the route path, with <route>/:parameterName>. 
+app.get('/api/animals/:id', (req, res) => {
+  const result = findById(req.params.id, animals);
+  if (result) {
+    res.json(result);
+  } else {
+    res.send(404);
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`API server now on port ${PORT}!`);
